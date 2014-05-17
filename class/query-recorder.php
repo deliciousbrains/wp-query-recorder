@@ -250,4 +250,23 @@ class Query_Recorder {
 		return str_replace( array( '/', '\\' ), DIRECTORY_SEPARATOR, $path );
 	}
 
+    function remove_saved_queries_file(){
+        global $wp_filesystem;
+
+        if( !function_exists( 'WP_Filesystem' ) )
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+
+        // protect if the the global filesystem isn't setup yet
+        if( is_null( $wp_filesystem ) )
+            WP_Filesystem();
+
+        $wp_filesystem->delete( $this->options['saved_queries_file_path'], false, 'f' );
+    }
+
+    // clean up on deactivation of the plugin
+    function deactivate(){
+        // TODO recommended flush saved DB settings
+        $this->remove_saved_queries_file();
+    }
+
 }

@@ -27,9 +27,20 @@ function query_recorder_load_textdomain() {
 add_action( 'wp_loaded', 'query_recorder_load_textdomain' );
 
 function query_recorder_init() {
-	require_once 'class/query-recorder.php';
+    if( ! class_exists( 'Query_Recorder' ) )
+        require_once 'class/query-recorder.php';
 
 	global $query_recorder;
 	$query_recorder = new Query_Recorder( __FILE__ );
 }
 add_action( 'init', 'query_recorder_init', 5 );
+
+function query_recorder_deactivate(){
+    if( ! class_exists( 'Query_Recorder' ) )
+        require_once 'class/query-recorder.php';
+
+    global $query_recorder;
+    $query_recorder = new Query_Recorder( __FILE__ );
+    $query_recorder->deactivate();
+}
+register_deactivation_hook( __FILE__, 'query_recorder_deactivate' );
