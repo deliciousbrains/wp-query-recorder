@@ -51,7 +51,23 @@ class Query_Recorder {
 			$date_stamp_message = sprintf( __( 'Started recording %s UTC', 'query-recorder' ), current_time( 'mysql', 1 ) );
 		}
 		update_option( 'query_recorder', $this->options );
-		file_put_contents( $this->options['saved_queries_file_path'], '# ' . $date_stamp_message . "\n", FILE_APPEND );
+
+        global $wp_filesystem;
+
+        if( !function_exists( 'WP_Filesystem' ) )
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+
+        // protect if the the global filesystem isn't setup yet
+        if( is_null( $wp_filesystem ) )
+            WP_Filesystem();
+
+        $current_sql = $wp_filesystem->get_contents( $this->options['saved_queries_file_path'] );
+        $current_sql .= '# ' . $date_stamp_message . "\n";
+
+        $wp_filesystem->put_contents(
+            $this->options['saved_queries_file_path'],
+            $current_sql,
+            FS_CHMOD_FILE);
 
 		echo '1';
 		exit;
@@ -116,7 +132,23 @@ class Query_Recorder {
 
 		// check if SQL has an ending semicolon and add if it doesn't
 		$save_sql = substr( rtrim( $sql ), -1 ) == ';' ? $sql : $sql . ' ;';
-		file_put_contents( $this->options['saved_queries_file_path'], $save_sql . "\n", FILE_APPEND );
+
+        global $wp_filesystem;
+
+        if( !function_exists( 'WP_Filesystem' ) )
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+
+        // protect if the the global filesystem isn't setup yet
+        if( is_null( $wp_filesystem ) )
+            WP_Filesystem();
+
+        $current_sql = $wp_filesystem->get_contents( $this->options['saved_queries_file_path'] );
+        $current_sql .= $save_sql . "\n";
+
+        $wp_filesystem->put_contents(
+            $this->options['saved_queries_file_path'],
+            $current_sql,
+            FS_CHMOD_FILE);
 
 		return $sql;
 	}
